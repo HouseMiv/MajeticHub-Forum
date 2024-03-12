@@ -87,22 +87,6 @@
             display: none;
         }
 
-        .copy-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #383737;
-            animation: copy 1s ease-out;
-        }
-
-        @keyframes copy {
-            0% { opacity: 0; }
-            50% { opacity: 0.3; }
-            100% { opacity: 0; }
-        }
-
         .image-wrapper {
             position: fixed;
             top: 0px;
@@ -181,21 +165,5 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-        document.getElementById("id_resultTable").addEventListener("click", function() {
-            copyResult();
-        });
-
-        function copyResult() {
-            var resultText = document.getElementById("id_resultTable").innerText;
-            navigator.clipboard.writeText(resultText);
-            var copyAnimation = document.createElement("div");
-            copyAnimation.classList.add("copy-animation");
-            document.querySelector(".stacker__result").appendChild(copyAnimation);
-            setTimeout(function() {
-                copyAnimation.remove();
-            }, 1000);
-        }
-    </script>
 </body>
 </html>
