@@ -1,7 +1,7 @@
 const punishStack = () => {
     const field = document.getElementById('id_punishField').value;
     const regex = /(?:(?:ID|PUNISH|TIME|NAME):[^;]+;){4,}/gm;
-    let m, result;
+    let m, result = '';
 
     while ((m = regex.exec(field)) !== null) {
         if (m.index === regex.lastIndex) {
@@ -13,7 +13,7 @@ const punishStack = () => {
         });
     }
 
-    let fieldArr = result.split(';');
+    let fieldArr = result.split(';').filter(Boolean); // Удаляем пустые элементы массива
     let idArr = [];
     let punishArr = [];
     let timeArr = [];
@@ -27,54 +27,39 @@ const punishStack = () => {
         else nameArr.push(fieldArr[i]);
     }
 
-    idArr = idArr.join('');
-    idArr = idArr.split(' ');
-    idArr = idArr.join('');
-    idArr = idArr.split('ID:');
+    for (let i = 0; i < idArr.length; i++) {
+        let id = idArr[i].split(':')[1].trim(); // Получаем значение ID
+        let punish = punishArr[i].split(':')[1].trim(); // Получаем значение наказания
+        let time = parseInt(timeArr[i].split(':')[1].trim()); // Получаем значение времени
 
-    punishArr = punishArr.join('');
-    punishArr = punishArr.split(' ');
-    punishArr = punishArr.join('');
-    punishArr = punishArr.split('PUNISH:');
+        // Ограничения времени для различных наказаний
+        if (punish === '/ajail' && time > 720) time = 720;
+        else if ((punish === '/ban' || punish === '/hardban') && time > 9999) time = 9999;
+        else if (punish === '/mute' && time > 720) time = 720;
 
-    timeArr = timeArr.join('');
-    timeArr = timeArr.split(' ');
-    timeArr = timeArr.join('');
-    timeArr = timeArr.split('TIME:');
+        let index = resultArr.findIndex(item => item.id === id && item.punish === punish);
 
-    nameArr = nameArr.join('');
-    nameArr = nameArr.split(' ');
-    nameArr = nameArr.join('');
-    nameArr = nameArr.split('NAME:');
-
-    for (let i = 1; i < idArr.length; i++) {
-        // Проверка на наличие одинаковых ID
-        if (idArr.indexOf(idArr[i]) !== i) continue;
-
-        // Формирование строки с результатом для текущего ID
-        let uniquePunishments = new Set(); // Для хранения уникальных наказаний для текущего ID
-        let resultStr = '';
-
-        for (let j = i; j < idArr.length; j++) {
-            if (idArr[j] === idArr[i]) {
-                let time = parseInt(timeArr[j]);
-                if (punishArr[j] === '/ajail' && time > 720) time = 720;
-                else if ((punishArr[j] === '/ban' || punishArr[j] === '/hardban') && time > 9999) time = 9999;
-                else if (punishArr[j] === '/mute' && time > 720) time = 720;
-                else if (punishArr[j] === '/gunban') time = '9999';
-
-                if (!uniquePunishments.has(punishArr[j])) {
-                    resultStr += "/"+punishArr[j]+" "+idArr[j]+" "+time+" Жалобы "+nameArr[j];
-                    uniquePunishments.add(punishArr[j]);
-                    if (j !== idArr.length - 1 && idArr[j + 1] === idArr[i]) resultStr += " + ";
-                }
-            }
+        if (index !== -1) {
+            resultArr[index].time += time; // Суммируем время для одинаковых наказаний и ID
+            resultArr[index].name += " + " + nameArr[i].split(':')[1].trim(); // Добавляем новую жалобу к уже существующему списку
+        } else {
+            resultArr.push({ id, punish, time, name: nameArr[i].split(':')[1].trim() });
         }
-        resultArr.push(resultStr);
     }
+
+    // Сортировка наказаний в заданном порядке
+    const order = ['ajail','ban', 'hardban', 'gunban', 'mute'];
+    resultArr.sort((a, b) => {
+        return order.indexOf(a.punish) - order.indexOf(b.punish);
+    });
 
     // Отображение результатов
+    let output = '';
     for (let i = 0; i < resultArr.length; i++) {
-        document.getElementById('id_resultTable').innerHTML += '<tr class="table__row"><td>'+resultArr[i]+"</td></tr>";
+        let { id, punish, time, name } = resultArr[i];
+        let timeString = (punish === '/gunban') ? 'бесконечно' : time.toString();
+
+        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + timeString + ' Жалобы ' + name + '</td></tr>';
     }
+    document.getElementById('id_resultTable').innerHTML = output;
 }
