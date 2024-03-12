@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helper Majestic Forum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header__body">
+            <span class="header__text">Stacker</span>
+        </div>
+    </header>
+    <main class="content">
+        <div class="content__body">
+            <div class="content__case stacker">
+                <input type="text"
+                        name="name_punishField" 
+                        id="id_punishField" 
+                        class="stacker__punish" 
+                        placeholder="Введите данные из столбца 'Punish List'" 
+                        value="" />
+                <button onclick="punishStack()" class="stacker__button">Выплонить</button>
+                <table class="stacker__data table" id="id_dataTable">
+                    <tr class="table__header"><b>Информация:</b></tr>
+                    <tr class="table__row">
+                        <td class="table__id" id="id_table-id-0">ID</td>
+                        <td class="table__punish" id="id_table-punish-0">Наказание</td>
+                        <td class="table__time" id="id_table-time-0">Время</td>
+                        <td class="table__name" id="id_table-name-0">Жалоба</td>
+                    </tr>
+                </table>
+                <br><br><br>
+                <table class="stacker__result table" id="id_resultTable">
+                    <tr class="table__header"><b>Результат:</b></tr>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
