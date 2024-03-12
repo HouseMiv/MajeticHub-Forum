@@ -1,0 +1,145 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Stacker</title>
+    <style>*,::after,::before{margin:0;padding:0;font-size:14px;font-family:'Roboto Condensed',sans-serif;box-sizing:border-box}body{background:#afafaf}.header{background:#333;width:100%;color:#fff;height:50px}.header__body{max-width:1280px;width:100%;height:100%;margin:0 auto;display:flex;justify-content:center;align-items:center}.header__text{font-weight:700;font-size:calc(10px + 1vmin);text-transform:uppercase}.content{width:100%}.content__body{max-width:1280px;width:100%;margin:0 auto;display:flex;justify-content:center;align-items:center}.content__case{padding:25px}.stacker{text-align:center;display:flex;flex-direction:column}.stacker__punish{border:0;padding:15px;width:30vw;height:10vh;text-align:center;outline:0}.stacker__button{border:0;width:30vw;margin-bottom:30px;outline:0;padding:5px;font-weight:700}</style>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header__body">
+            <span class="header__text">Stacker</span>
+        </div>
+    </header>
+    <main class="content">
+        <div class="content__body">
+            <div class="content__case stacker">
+                <input type="text"
+                        name="name_punishField" 
+                        id="id_punishField" 
+                        class="stacker__punish" 
+                        placeholder="Введите данные из столбца 'Punish List'" 
+                        value="" />
+                <button onclick="punishStack()" class="stacker__button">Выплонить</button>
+                <table class="stacker__data table" id="id_dataTable">
+                    <tr class="table__header"><b>Информация:</b></tr>
+                    <tr class="table__row">
+                        <td class="table__id" id="id_table-id-0">ID</td>
+                        <td class="table__punish" id="id_table-punish-0">Наказание</td>
+                        <td class="table__time" id="id_table-time-0">Время</td>
+                        <td class="table__name" id="id_table-name-0">Жалоба</td>
+                    </tr>
+                </table>
+                <br><br><br>
+                <table class="stacker__result table" id="id_resultTable">
+                    <tr class="table__header"><b>Результат:</b></tr>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        const punishStack = () => {
+            const field = document.getElementById('id_punishField').value;
+            const regex = /(?:(?:ID|PUNISH|TIME|NAME):[^;]+;){4,}/gm;
+            let m, result;
+
+            while ((m = regex.exec(field)) !== null) {
+                if (m.index === regex.lastIndex) {
+                    regex.lastIndex++;
+                }
+                
+                m.forEach((match, groupIndex) => {
+                    result += match;
+                });
+            }
+
+            let fieldArr = result.split(';');
+            let idArr = [];
+            let punishArr = [];
+            let timeArr = [];
+            let nameArr = [];
+            let resultArr = [];
+
+            for (let i = 0; i < fieldArr.length; i++) {
+                if (fieldArr[i].includes('ID:')) idArr.push(fieldArr[i]);
+                else if (fieldArr[i].includes('PUNISH:')) punishArr.push(fieldArr[i]);
+                else if (fieldArr[i].includes('TIME:')) timeArr.push(fieldArr[i]);
+                else nameArr.push(fieldArr[i]);
+            }
+
+            idArr = idArr.join('');
+            idArr = idArr.split(' ');
+            idArr = idArr.join('');
+            idArr = idArr.split('ID:');
+
+            punishArr = punishArr.join('');
+            punishArr = punishArr.split(' ');
+            punishArr = punishArr.join('');
+            punishArr = punishArr.split('PUNISH:');
+
+            timeArr = timeArr.join('');
+            timeArr = timeArr.split(' ');
+            timeArr = timeArr.join('');
+            timeArr = timeArr.split('TIME:');
+
+            nameArr = nameArr.join('');
+            nameArr = nameArr.split(' ');
+            nameArr = nameArr.join('');
+            nameArr = nameArr.split('NAME:');
+
+            for (let i = 1; i < idArr.length; i++) {
+                document.getElementById('id_dataTable').innerHTML += 
+                '<tr class="table__row">'+
+                    '<td class="table__id" id="id__table-id-'+i+'">'+idArr[i]+"</td>"+
+                    '<td class="table__punish" id="id_table-punish-'+i+'">'+punishArr[i]+"</td>"+
+                    '<td class="table__time" id="id_table-time-'+i+'">'+timeArr[i]+"</td>"+
+                    '<td class="table__name" id="id_table-name-'+i+'">'+nameArr[i]+"</td>"+
+                "</tr>"
+            }
+
+            for (let i = 1; i < idArr.length; i++) {
+                let p = i;
+                for (let c = ++p; c < idArr.length; c++) {
+                    if (idArr[i] == idArr[c] && punishArr[i] == punishArr[c]) {
+                        if (idArr[i] == undefined) continue;
+                        else {
+                            let time = Math.round(parseInt(timeArr[i])+parseInt(timeArr[c]));
+
+                            if (parseInt(timeArr[i])+parseInt(timeArr[c]) > 720) {
+                                time = 720;
+                            }
+
+                            resultArr.push("/"+punishArr[i]+" "+idArr[i]+" "+time+" Жалобы "+nameArr[i]+" + "+nameArr[c]);
+
+                            delete idArr[i];
+                            delete idArr[c];
+
+                            delete punishArr[i];
+                            delete punishArr[c];
+
+                            delete timeArr[i];
+                            delete timeArr[c];
+
+                            delete nameArr[i];
+                            delete nameArr[c];
+                        }
+
+                    }
+                    else continue;
+                }
+                if (idArr[i] == undefined) continue;
+                else resultArr.push("/"+punishArr[i]+" "+idArr[i]+" "+timeArr[i]+" Жалоба "+nameArr[i]);
+            }
+
+            for (let i = 0; i < resultArr.length; i++) {
+                document.getElementById('id_resultTable').innerHTML += '<tr class="table__row">'+resultArr[i]+"</tr>"
+            }
+        }
+    </script>
+</html>
