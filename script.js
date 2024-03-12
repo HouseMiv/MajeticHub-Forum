@@ -34,7 +34,7 @@ const punishStack = () => {
 
         // Ограничения времени для различных наказаний
         if (punish === '/ajail' && time > 720) time = 720;
-        else if ((punish === '/ban' || punish === '/hardban') && time > 9999) time = 9999;
+        else if ((punish === '/ban' || punish === '/hardban' || punish === '/gunban') && time > 9999) time = 9999;
         else if (punish === '/mute' && time > 720) time = 720;
 
         let index = resultArr.findIndex(item => item.id === id && item.punish === punish);
@@ -48,18 +48,21 @@ const punishStack = () => {
     }
 
     // Сортировка наказаний в заданном порядке
-    const order = ['ajail','ban', 'hardban', 'gunban', 'mute'];
-    resultArr.sort((a, b) => {
+    const order = ['ajail', 'ban', 'hardban', 'gunban', 'mute'];
+resultArr.sort((a, b) => {
+    if (a.punish === 'ajail' && b.punish === 'ajail') {
+        return b.time - a.time; // Сортируем от большего к меньшему времени для ajail
+    } else {
         return order.indexOf(a.punish) - order.indexOf(b.punish);
-    });
+    }
+});
 
     // Отображение результатов
     let output = '';
     for (let i = 0; i < resultArr.length; i++) {
         let { id, punish, time, name } = resultArr[i];
-        let timeString = (punish === '/gunban') ? 'бесконечно' : time.toString();
 
-        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + timeString + ' Жалобы ' + name + '</td></tr>';
+        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + (punish === '/gunban' ? 'бесконечно' : time.toString()) + ' Жалобы ' + name + '</td></tr>';
     }
     document.getElementById('id_resultTable').innerHTML = output;
 }
