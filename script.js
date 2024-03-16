@@ -41,28 +41,29 @@ const punishStack = () => {
 
         if (index !== -1) {
             resultArr[index].time += time; // Суммируем время для одинаковых наказаний и ID
-            resultArr[index].name += " + " + nameArr[i].split(':')[1].trim(); // Добавляем новую жалобу к уже существующему списку
+            resultArr[index].name.push(nameArr[i].split(':')[1].trim()); // Добавляем новую жалобу к уже существующему списку
         } else {
-            resultArr.push({ id, punish, time, name: nameArr[i].split(':')[1].trim() });
+            resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1].trim()] });
         }
     }
 
     // Сортировка наказаний в заданном порядке
     const order = ['ajail', 'ban', 'hardban', 'gunban', 'mute'];
-resultArr.sort((a, b) => {
-    if (a.punish === 'ajail' && b.punish === 'ajail') {
-        return b.time - a.time; // Сортируем от большего к меньшему времени для ajail
-    } else {
-        return order.indexOf(a.punish) - order.indexOf(b.punish);
-    }
-});
+    resultArr.sort((a, b) => {
+        if (a.punish === 'ajail' && b.punish === 'ajail') {
+            return b.time - a.time; // Сортируем от большего к меньшему времени для ajail
+        } else {
+            return order.indexOf(a.punish) - order.indexOf(b.punish);
+        }
+    });
 
     // Отображение результатов
     let output = '';
     for (let i = 0; i < resultArr.length; i++) {
         let { id, punish, time, name } = resultArr[i];
 
-        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + (punish === '/gunban' ? 'бесконечно' : time.toString()) + ' Жалобы ' + name + '</td></tr>';
+        let plural = name.length === 1 ? 'Жалоба' : 'Жалобы';
+        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + (punish === '/gunban' ? 'бесконечно' : time.toString()) + ' ' + plural + ' ' + name.join(', ') + '</td></tr>';
     }
     document.getElementById('id_resultTable').innerHTML = output;
 }
