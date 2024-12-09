@@ -8,7 +8,7 @@ const punishStack = () => {
             regex.lastIndex++;
         }
         
-        m.forEach((match, groupIndex) => {
+        m.forEach((match) => {
             result += match;
         });
     }
@@ -37,6 +37,13 @@ const punishStack = () => {
         else if ((punish === '/ban' || punish === '/hardban' || punish === '/gunban') && time > 9999) time = 9999;
         else if (punish === '/mute' && time > 720) time = 720;
 
+        // Если наказание — это warn, добавляем его без проверки на совпадение
+        if (punish === '/warn') {
+            resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1].trim()] });
+            continue;
+        }
+
+        // Для остальных наказаний проверяем на совпадение ID и типа наказания
         let index = resultArr.findIndex(item => item.id === id && item.punish === punish);
 
         if (index !== -1) {
@@ -48,7 +55,7 @@ const punishStack = () => {
     }
 
     // Сортировка наказаний в заданном порядке
-    const order = ['ajail', 'ban', 'hardban', 'gunban', 'mute'];
+    const order = ['ajail', 'ban', 'hardban', 'gunban', 'mute', 'warn'];
     resultArr.sort((a, b) => {
         if (a.punish === 'ajail' && b.punish === 'ajail') {
             return b.time - a.time; // Сортируем от большего к меньшему времени для ajail
