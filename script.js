@@ -30,16 +30,16 @@ const punishStack = () => {
     for (let i = 0; i < idArr.length; i++) {
         let id = idArr[i].split(':')[1].trim(); // Получаем значение ID
         let punish = punishArr[i].split(':')[1].trim(); // Получаем значение наказания
-        let time = parseInt(timeArr[i].split(':')[1].trim()); // Получаем значение времени
+        let time = punish !== '/warn' ? parseInt(timeArr[i].split(':')[1].trim()) : null; // Для warn время игнорируется
 
         // Ограничения времени для различных наказаний
         if (punish === '/ajail' && time > 720) time = 720;
         else if ((punish === '/ban' || punish === '/hardban' || punish === '/gunban') && time > 9999) time = 9999;
         else if (punish === '/mute' && time > 720) time = 720;
 
-        // Если наказание — это warn, добавляем его без проверки на совпадение
+        // Если наказание — это warn, добавляем его без времени и без проверки на совпадение
         if (punish === '/warn') {
-            resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1].trim()] });
+            resultArr.push({ id, punish, name: [nameArr[i].split(':')[1].trim()] });
             continue;
         }
 
@@ -70,7 +70,13 @@ const punishStack = () => {
         let { id, punish, time, name } = resultArr[i];
 
         let plural = name.length === 1 ? 'Жалоба' : 'Жалобы';
-        output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + (punish === '/gunban' ? 'бесконечно' : time.toString()) + ' ' + plural + ' ' + name.join(', ') + '</td></tr>';
+        if (punish === '/warn') {
+            // Отображение для warn без времени
+            output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + plural + ' ' + name.join(', ') + '</td></tr>';
+        } else {
+            // Отображение для других типов с временем
+            output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + (punish === '/gunban' ? 'бесконечно' : time.toString()) + ' ' + plural + ' ' + name.join(', ') + '</td></tr>';
+        }
     }
     document.getElementById('id_resultTable').innerHTML = output;
 }
