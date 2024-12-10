@@ -1,6 +1,6 @@
 const punishStack = () => {
     const field = document.getElementById('id_punishField').value;
-    const regex = /(?:(?:ID|PUNISH|TIME|NAME):[^;]+;){4,}/gm;
+    const regex = /(?:(?:ID|PUNISH|TIME|NAME):[^;]*;){4}/gm; // Допущено, что TIME может быть пустым
     let m, result = '';
 
     while ((m = regex.exec(field)) !== null) {
@@ -23,22 +23,23 @@ const punishStack = () => {
         if (fieldArr[i].includes('ID:')) idArr.push(fieldArr[i]);
         else if (fieldArr[i].includes('PUNISH:')) punishArr.push(fieldArr[i]);
         else if (fieldArr[i].includes('TIME:')) timeArr.push(fieldArr[i]);
-        else nameArr.push(fieldArr[i]);
+        else if (fieldArr[i].includes('NAME:')) nameArr.push(fieldArr[i]);
     }
 
     for (let i = 0; i < idArr.length; i++) {
-        let id = idArr[i].split(':')[1].trim(); // Получаем значение ID
-        let punish = punishArr[i].split(':')[1].trim(); // Получаем значение наказания
-        let time = punish !== '/warn' ? parseInt(timeArr[i]?.split(':')[1]?.trim() || 0) : null; // Игнорируем время для warn
+        let id = idArr[i].split(':')[1]?.trim(); // Получаем значение ID
+        let punish = punishArr[i].split(':')[1]?.trim(); // Получаем значение наказания
+        let time = timeArr[i]?.split(':')[1]?.trim(); // Получаем значение TIME (может быть пустым)
+        time = time ? parseInt(time) : null; // Преобразуем время в число или оставляем null
 
         // Ограничения времени для различных наказаний
         if (punish === '/ajail' && time > 720) time = 720;
         else if ((punish === '/ban' || punish === '/hardban' || punish === '/gunban') && time > 9999) time = 9999;
         else if (punish === '/mute' && time > 720) time = 720;
 
-        // Если наказание — это warn, добавляем его без времени и проверки на совпадение
-        if (punish === '/warn') {
-            resultArr.push({ id, punish, time: null, name: [nameArr[i].split(':')[1].trim()] });
+        // Обработка случая для warn
+        if (punish === 'warn' || punish === '/warn') {
+            resultArr.push({ id, punish, time: null, name: [nameArr[i].split(':')[1]?.trim()] });
             continue;
         }
 
@@ -47,9 +48,9 @@ const punishStack = () => {
 
         if (index !== -1) {
             resultArr[index].time += time; // Суммируем время для одинаковых наказаний и ID
-            resultArr[index].name.push(nameArr[i].split(':')[1].trim()); // Добавляем новую жалобу к уже существующему списку
+            resultArr[index].name.push(nameArr[i].split(':')[1]?.trim()); // Добавляем новую жалобу к уже существующему списку
         } else {
-            resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1].trim()] });
+            resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1]?.trim()] });
         }
     }
 
@@ -69,7 +70,7 @@ const punishStack = () => {
         let { id, punish, time, name } = resultArr[i];
 
         let plural = name.length === 1 ? 'Жалоба' : 'Жалобы';
-        if (punish === '/warn') {
+        if (punish === 'warn' || punish === '/warn') {
             // Отображение для warn без времени
             output += '<tr class="table__row"><td>/' + punish + ' ' + id + ' ' + plural + ' ' + name.join(', ') + '</td></tr>';
         } else {
