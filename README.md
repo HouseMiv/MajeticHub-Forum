@@ -1,4 +1,4 @@
-# MajeticHub-Forum
+MajeticHub-Forum
 ======================
 
 ## Описание
