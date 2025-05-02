@@ -31,7 +31,7 @@ const punishStack = () => {
         m.forEach((match) => {
             // Проверяем, что строка не состоит только из пустых значений
             if (!match.match(/ID:;PUNISH:;TIME:;NAME:;/)) {
-                result += match;
+            result += match;
             }
         });
     }
