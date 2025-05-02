@@ -234,7 +234,7 @@ body {
     background: #1a1a1a;
     color: #fff;
     padding: 15px;
-    text-align: left;
+    text-align: center;
     font-weight: 700;
     border-bottom: 2px solid #fd1b54;
 }
@@ -242,6 +242,7 @@ body {
 .table__row {
     background: #1a1a1a;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
 .table__row:hover {
@@ -254,6 +255,7 @@ body {
     text-align: left;
 }
 
+
 .footer {
     position: fixed;
     left: 0;
@@ -264,9 +266,11 @@ body {
     z-index: 100;
     animation: footer-fade-in 1s;
     display: flex;
-    align-items: center;
+    flex-direction: column; /* теперь вертикально */
+    align-items: flex-start;
     justify-content: flex-start;
 }
+
 
 @keyframes footer-fade-in {
     from { opacity: 0; transform: translateY(30px);}
@@ -289,6 +293,15 @@ body {
     height: 20px;
     vertical-align: middle;
     margin-right: 0px;
+}
+
+.footer__note {
+    margin-left: 32px;
+    margin-top: 6px;
+    opacity: 0.65;
+    font-style: italic;
+    font-size: 13px;
+    color: #ccc;
 }
 
 .cell-wrapper {
