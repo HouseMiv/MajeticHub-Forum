@@ -190,24 +190,11 @@ const punishStack = () => {
         
         let cell = document.createElement('td');
         let commandText = '';
-        
-        // Ограничения времени для различных наказаний
-        const timeLimits = {
-            '/ajail': 720,
-            '/mute': 720,
-            '/ban': 9999,
-            '/hardban': 9999,
-            '/gunban': 9999
-        };
-
         if (punish === 'warn' || punish === '/warn') {
             commandText = `/${punish} ${id} ${plural} ${name.join(', ')}`;
         } else {
-            // Применяем ограничение времени при формировании команды
-            const limitedTime = timeLimits[punish] ? Math.min(Math.max(1, time || 0), timeLimits[punish]) : time;
-            commandText = `/${punish} ${id} ${punish === '/gunban' ? 'бесконечно' : limitedTime.toString()} ${plural} ${name.join(', ')}`;
+            commandText = `/${punish} ${id} ${punish === '/gunban' ? 'бесконечно' : time.toString()} ${plural} ${name.join(', ')}`;
         }
-        
         cell.textContent = commandText;
         row.appendChild(cell);
         resultTable.appendChild(row);
