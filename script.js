@@ -23,6 +23,60 @@ const punishStack = () => {
 
     const regex = /(?:(?:ID|PUNISH|TIME|NAME):[^;]*;){4}/gm;
     let m, result = '';
+    let errors = [];
+
+    // Проверяем каждую строку на наличие всех необходимых полей
+    const lines = field.value.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Пропускаем пустые строки и строки, содержащие только дефисы
+        if (!line || /^-+$/.test(line)) continue;
+        
+        // Проверяем наличие всех необходимых полей
+        if (!line.includes('ID:')) {
+            errors.push(`Ошибка в строке ${i + 1}: отсутствует поле ID\nСтрока: "${line}"`);
+        }
+        if (!line.includes('PUNISH:')) {
+            errors.push(`Ошибка в строке ${i + 1}: отсутствует поле PUNISH\nСтрока: "${line}"`);
+        }
+        if (!line.includes('NAME:')) {
+            errors.push(`Ошибка в строке ${i + 1}: отсутствует поле NAME\nСтрока: "${line}"`);
+        }
+        
+        // Проверяем пустые значения
+        const idMatch = line.match(/ID:([^;]*);/);
+        if (idMatch && !idMatch[1].trim()) {
+            errors.push(`Ошибка в строке ${i + 1}: пустое значение ID\nСтрока: "${line}"`);
+        }
+        
+        const punishMatch = line.match(/PUNISH:([^;]*);/);
+        if (punishMatch && !punishMatch[1].trim()) {
+            errors.push(`Ошибка в строке ${i + 1}: пустое значение PUNISH\nСтрока: "${line}"`);
+        }
+        
+        const nameMatch = line.match(/NAME:([^;]*);/);
+        if (nameMatch && !nameMatch[1].trim()) {
+            errors.push(`Ошибка в строке ${i + 1}: пустое значение NAME\nСтрока: "${line}"`);
+        }
+        
+        // Для warn TIME может быть пустым, для остальных наказаний проверяем
+        if (punishMatch) {
+            const punish = punishMatch[1].trim();
+            if (punish !== 'warn' && punish !== '/warn') {
+                const timeMatch = line.match(/TIME:([^;]*);/);
+                if (!timeMatch || !timeMatch[1].trim()) {
+                    errors.push(`Ошибка в строке ${i + 1}: отсутствует или пустое значение TIME для наказания ${punish}\nСтрока: "${line}"`);
+                }
+            }
+        }
+    }
+
+    // Если есть ошибки, показываем их все
+    if (errors.length > 0) {
+        showError(errors.join('\n\n'));
+        return;
+    }
 
     while ((m = regex.exec(field.value)) !== null) {
         if (m.index === regex.lastIndex) {
@@ -31,13 +85,13 @@ const punishStack = () => {
         m.forEach((match) => {
             // Проверяем, что строка не состоит только из пустых значений
             if (!match.match(/ID:;PUNISH:;TIME:;NAME:;/)) {
-            result += match;
+                result += match;
             }
         });
     }
 
     if (!result) {
-        showError('Неверный формат данных');
+        showError('Неверный формат данных. Проверьте, что все строки имеют правильный формат:\nID:значение;PUNISH:значение;TIME:значение;NAME:значение;');
         return;
     }
 
@@ -74,7 +128,7 @@ const punishStack = () => {
         let id = idArr[i].split(':')[1]?.trim();
         let punish = punishArr[i].split(':')[1]?.trim();
         let time = timeArr[i]?.split(':')[1]?.trim();
-        time = time ? parseInt(time) : null;
+        time = time ? Math.floor(parseInt(time)) : null;
 
         // Validate ID and punish
         if (!id || !punish) {
@@ -82,9 +136,18 @@ const punishStack = () => {
         }
 
         // Ограничения времени для различных наказаний
-        if (punish === '/ajail' && time > 720) time = 720;
-        else if ((punish === '/ban' || punish === '/hardban' || punish === '/gunban') && time > 9999) time = 9999;
-        else if (punish === '/mute' && time > 720) time = 720;
+        const timeLimits = {
+            '/ajail': 720,
+            '/mute': 720,
+            '/ban': 9999,
+            '/hardban': 9999,
+            '/gunban': 9999
+        };
+
+        // Применяем ограничение времени
+        if (timeLimits[punish]) {
+            time = Math.min(Math.max(1, time || 0), timeLimits[punish]);
+        }
 
         // Обработка случая для warn
         if (punish === 'warn' || punish === '/warn') {
@@ -96,7 +159,9 @@ const punishStack = () => {
         let index = resultArr.findIndex(item => item.id === id && item.punish === punish);
 
         if (index !== -1) {
-            resultArr[index].time += time;
+            // Проверяем, не превысит ли суммарное время лимит
+            const newTime = (resultArr[index].time || 0) + (time || 0);
+            resultArr[index].time = timeLimits[punish] ? Math.min(newTime, timeLimits[punish]) : newTime;
             resultArr[index].name.push(nameArr[i].split(':')[1]?.trim());
         } else {
             resultArr.push({ id, punish, time, name: [nameArr[i].split(':')[1]?.trim()] });
@@ -125,11 +190,24 @@ const punishStack = () => {
         
         let cell = document.createElement('td');
         let commandText = '';
+        
+        // Ограничения времени для различных наказаний
+        const timeLimits = {
+            '/ajail': 720,
+            '/mute': 720,
+            '/ban': 9999,
+            '/hardban': 9999,
+            '/gunban': 9999
+        };
+
         if (punish === 'warn' || punish === '/warn') {
             commandText = `/${punish} ${id} ${plural} ${name.join(', ')}`;
         } else {
-            commandText = `/${punish} ${id} ${punish === '/gunban' ? 'бесконечно' : time.toString()} ${plural} ${name.join(', ')}`;
+            // Применяем ограничение времени при формировании команды
+            const limitedTime = timeLimits[punish] ? Math.min(Math.max(1, time || 0), timeLimits[punish]) : time;
+            commandText = `/${punish} ${id} ${punish === '/gunban' ? 'бесконечно' : limitedTime.toString()} ${plural} ${name.join(', ')}`;
         }
+        
         cell.textContent = commandText;
         row.appendChild(cell);
         resultTable.appendChild(row);
@@ -223,7 +301,7 @@ const showError = (message) => {
     const resultsContainer = document.getElementById('id_resultsContainer');
     const resultsCase = document.querySelector('.results-case');
     
-    resultTable.innerHTML = `<tr class="table__row error-row"><td style="color: #fd1b54; text-align: center;">${message}</td></tr>`;
+    resultTable.innerHTML = `<tr class="table__row error-row"><td style="color: #fd1b54; text-align: center; padding: 20px; font-size: 16px; white-space: pre-line;">${message}</td></tr>`;
     
     // Показываем блок результатов с ошибкой
     setTimeout(() => {

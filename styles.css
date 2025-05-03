@@ -252,9 +252,8 @@ body {
 .table__row td {
     padding: 15px;
     border-bottom: 1px solid #3c3c3c;
-    text-align: left;
+    text-align: center;
 }
-
 
 .footer {
     position: fixed;
@@ -270,7 +269,6 @@ body {
     align-items: flex-start;
     justify-content: flex-start;
 }
-
 
 @keyframes footer-fade-in {
     from { opacity: 0; transform: translateY(30px);}
