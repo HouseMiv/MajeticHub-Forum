@@ -297,6 +297,25 @@ const showError = (message) => {
     }, 100);
 };
 
+const clearInput = () => {
+    const field = document.getElementById('id_punishField');
+    const resultTable = document.getElementById('id_resultTable');
+    const resultsContainer = document.getElementById('id_resultsContainer');
+    const resultsCase = document.querySelector('.results-case');
+    const copyButton = document.querySelector('.copy-button');
+    
+    // Очищаем поле ввода
+    field.value = '';
+    
+    // Очищаем таблицу результатов
+    resultTable.innerHTML = '';
+    
+    // Скрываем блок результатов и кнопку копирования
+    copyButton.style.display = 'none';
+    resultsContainer.classList.remove('visible');
+    resultsCase.classList.remove('visible');
+};
+
 // Добавляем обработчик нажатия Enter в поле ввода
 document.getElementById('id_punishField').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
