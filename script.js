@@ -287,7 +287,7 @@ const showError = (message) => {
     const resultTable = document.getElementById('id_resultTable');
     const resultsContainer = document.getElementById('id_resultsContainer');
     const resultsCase = document.querySelector('.results-case');
-
+    
     let html = '';
     const errorLines = message.split(/\n\n/);
     if (errorLines.length > 1) {
@@ -316,7 +316,7 @@ const showError = (message) => {
         }
     }
     resultTable.innerHTML = `<tr class="table__row error-row"><td>${html}</td></tr>`;
-
+    
     // Показываем блок результатов с ошибкой
     setTimeout(() => {
         resultsContainer.classList.add('visible');
@@ -411,10 +411,6 @@ function updateLineNumbers() {
     const textarea = document.getElementById('id_punishField');
     const lineNumbers = document.getElementById('lineNumbers');
     if (!textarea || !lineNumbers) return;
-    if (!textarea.value) {
-        lineNumbers.innerHTML = '';
-        return;
-    }
     const lines = textarea.value.split('\n').length;
     let html = '';
     for (let i = 1; i <= lines; i++) {
@@ -433,23 +429,3 @@ if (punishField) {
     // Инициализация при загрузке
     updateLineNumbers();
 }
-
-// Показать уведомление об обновлении только один раз
-(function() {
-    const noticeKey = 'updateNotice_v1'; // увеличьте версию при следующем обновлении
-    if (!localStorage.getItem(noticeKey)) {
-        const notice = document.getElementById('updateNotice');
-        if (notice) {
-            notice.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            const closeBtn = document.getElementById('updateNoticeClose');
-            if (closeBtn) {
-                closeBtn.onclick = function() {
-                    notice.style.display = 'none';
-                    document.body.style.overflow = '';
-                    localStorage.setItem(noticeKey, '1');
-                };
-            }
-        }
-    }
-})();
