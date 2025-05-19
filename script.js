@@ -287,34 +287,108 @@ const showError = (message) => {
     const resultTable = document.getElementById('id_resultTable');
     const resultsContainer = document.getElementById('id_resultsContainer');
     const resultsCase = document.querySelector('.results-case');
-    
-    resultTable.innerHTML = `<tr class="table__row error-row"><td style="color: #fd1b54; text-align: center; padding: 20px; font-size: 16px; white-space: pre-line;">${message}</td></tr>`;
-    
+
+    let html = '';
+    const errorLines = message.split(/\n\n/);
+    if (errorLines.length > 1) {
+        html = `<div class='error-block'>
+            <span class='error-caption'>Нажмите на ошибку, чтобы перейти к строке</span>` +
+            errorLines.map(err => {
+                const match = err.match(/строке (\d+)/i);
+                if (match) {
+                    const line = match[1];
+                    return `<div class="error-line" data-line="${line}">${err.replace(/\n/g,'<br>')}</div>`;
+                }
+                return `<div style="color:#fd1b54;text-align:left;padding:8px 0;">${err.replace(/\n/g,'<br>')}</div>`;
+            }).join('') +
+            `</div>`;
+    } else {
+        // Если одна ошибка и есть номер строки — делаем её кликабельной
+        const match = message.match(/строке (\d+)/i);
+        if (match) {
+            const line = match[1];
+            html = `<div class='error-block'>
+                <span class='error-caption'>Нажмите на ошибку, чтобы перейти к строке</span>
+                <div class="error-line" data-line="${line}">${message.replace(/\n/g,'<br>')}</div>
+            </div>`;
+        } else {
+            html = `<div class='error-block'><div style="color:#fd1b54;text-align:left;padding:8px 0;">${message.replace(/\n/g,'<br>')}</div></div>`;
+        }
+    }
+    resultTable.innerHTML = `<tr class="table__row error-row"><td>${html}</td></tr>`;
+
     // Показываем блок результатов с ошибкой
     setTimeout(() => {
         resultsContainer.classList.add('visible');
         resultsCase.classList.add('visible');
     }, 100);
+
+    // Добавляем обработчик клика по ошибке
+    setTimeout(() => {
+        document.querySelectorAll('.error-line').forEach(el => {
+            el.addEventListener('click', function() {
+                const line = parseInt(this.getAttribute('data-line'), 10);
+                const textarea = document.getElementById('id_punishField');
+                if (!textarea || isNaN(line)) return;
+                const lines = textarea.value.split('\n');
+                let pos = 0;
+                for (let i = 0; i < line - 1 && i < lines.length; i++) {
+                    pos += lines[i].length + 1; // +1 for \n
+                }
+                textarea.focus();
+                textarea.setSelectionRange(pos, pos);
+                // Прокрутка
+                const lineHeight = textarea.scrollHeight / lines.length;
+                textarea.scrollTop = (line - 1) * lineHeight - textarea.clientHeight / 2 + lineHeight;
+            });
+        });
+    }, 200);
+};
+
+const autoResizeTextarea = (element) => {
+    element.style.height = 'auto';
+    element.style.height = (element.scrollHeight) + 'px';
 };
 
 const clearInput = () => {
     const field = document.getElementById('id_punishField');
-    const resultTable = document.getElementById('id_resultTable');
+    field.value = '';
+    autoResizeTextarea(field);
     const resultsContainer = document.getElementById('id_resultsContainer');
     const resultsCase = document.querySelector('.results-case');
     const copyButton = document.querySelector('.copy-button');
-    
-    // Очищаем поле ввода
-    field.value = '';
-    
-    // Очищаем таблицу результатов
-    resultTable.innerHTML = '';
-    
-    // Скрываем блок результатов и кнопку копирования
-    copyButton.style.display = 'none';
     resultsContainer.classList.remove('visible');
     resultsCase.classList.remove('visible');
+    copyButton.style.display = 'none';
 };
+
+const toggleTextareaSize = () => {
+    const textarea = document.getElementById('id_punishField');
+    const resizeButton = document.querySelector('.resize-button');
+    
+    if (textarea.style.height && textarea.style.height !== '100px') {
+        // Возвращаем к минимальному размеру
+        textarea.style.height = '100px';
+    } else {
+        // Временно убираем ограничение высоты для расчета полной высоты текста
+        textarea.style.height = 'auto';
+        const scrollHeight = textarea.scrollHeight;
+        // Устанавливаем новую высоту
+        textarea.style.height = `${scrollHeight}px`;
+    }
+};
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const textarea = document.getElementById('id_punishField');
+    const resizeButton = document.querySelector('.resize-button');
+    
+    // Устанавливаем начальную высоту
+    textarea.style.height = '100px';
+    
+    // Добавляем только обработчик для кнопки расширения
+    resizeButton.addEventListener('click', toggleTextareaSize);
+});
 
 // Добавляем обработчик нажатия Enter в поле ввода
 document.getElementById('id_punishField').addEventListener('keypress', (e) => {
@@ -332,3 +406,46 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, 1500);
 });
+
+function updateLineNumbers() {
+    const textarea = document.getElementById('id_punishField');
+    const lineNumbers = document.getElementById('lineNumbers');
+    if (!textarea || !lineNumbers) return;
+    const lines = textarea.value.split('\n').length;
+    let html = '';
+    for (let i = 1; i <= lines; i++) {
+        html += i + '<br>';
+    }
+    lineNumbers.innerHTML = html;
+}
+
+// Обновлять номера строк при вводе
+const punishField = document.getElementById('id_punishField');
+if (punishField) {
+    punishField.addEventListener('input', updateLineNumbers);
+    punishField.addEventListener('scroll', function() {
+        document.getElementById('lineNumbers').scrollTop = punishField.scrollTop;
+    });
+    // Инициализация при загрузке
+    updateLineNumbers();
+}
+
+// Показать уведомление об обновлении только один раз
+(function() {
+    const noticeKey = 'updateNotice_v1'; // увеличьте версию при следующем обновлении
+    if (!localStorage.getItem(noticeKey)) {
+        const notice = document.getElementById('updateNotice');
+        if (notice) {
+            notice.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            const closeBtn = document.getElementById('updateNoticeClose');
+            if (closeBtn) {
+                closeBtn.onclick = function() {
+                    notice.style.display = 'none';
+                    document.body.style.overflow = '';
+                    localStorage.setItem(noticeKey, '1');
+                };
+            }
+        }
+    }
+})();

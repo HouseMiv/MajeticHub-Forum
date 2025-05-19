@@ -6,11 +6,22 @@
     <meta name="description" content="MajesticHUB Forum - Инструмент для модерации форума" />
     <meta name="theme-color" content="#1a1a1a" />
     <title>MajesticHUB Forum</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div id="updateNotice" class="update-notice" style="display:none;">
+        <div class="update-notice__content">
+            <span class="update-notice__title">New update!</span>
+            <span class="update-notice__text">
+                • Добавлено расширение поля ввода в зависимости от текста<br>
+                • Добавлена внутренняя нумерация строк<br>
+                • Теперь при нажатии на ошибку можно перейти к соответствующей строке
+            </span>
+            <button class="update-notice__close" id="updateNoticeClose">Ок</button>
+        </div>
+    </div>
     <div id="preloader">
         <div class="preloader-content">
             <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjJsdW44aThrdGRlaWc4ZWxnNHg0bzM4dTZyemNwaXhzbjJvamo5diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lQbkRHgikoZFMQxNWd/giphy.gif" alt="Котик" class="preloader-cat" />
@@ -47,15 +58,23 @@
                             </tr>
                         </thead>
                     </table>
-                    <textarea
-                        name="name_punishField" 
-                        id="id_punishField" 
-                        class="stacker__punish" 
-                        placeholder="Введите данные из столбца 'Punish List'"
-                        spellcheck="false"
-                    ></textarea>
+                    <div class="textarea-wrapper">
+                        <div class="line-numbers" id="lineNumbers"></div>
+                        <textarea
+                            name="name_punishField" 
+                            id="id_punishField" 
+                            class="stacker__punish" 
+                            placeholder="Введите данные из столбца 'Punish List'"
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
                     <div class="stacker__controls">
-                        <button onclick="punishStack()" class="stacker__button">Обработать</button>
+                        <button onclick="punishStack()" class="stacker__button process-button">ОБРАБОТАТЬ</button>
+                        <button class="stacker__button resize-button" title="Изменить размер поля">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 3H3v18h18V3zM7 7h10M7 12h10M7 17h10"/>
+                            </svg>
+                        </button>
                         <button onclick="clearInput()" class="stacker__button clear-button" title="Очистить поле ввода">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
