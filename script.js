@@ -411,6 +411,10 @@ function updateLineNumbers() {
     const textarea = document.getElementById('id_punishField');
     const lineNumbers = document.getElementById('lineNumbers');
     if (!textarea || !lineNumbers) return;
+    if (!textarea.value) {
+        lineNumbers.innerHTML = '';
+        return;
+    }
     const lines = textarea.value.split('\n').length;
     let html = '';
     for (let i = 1; i <= lines; i++) {
