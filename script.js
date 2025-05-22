@@ -5,18 +5,14 @@ const punishStack = () => {
     const copyButton = document.querySelector('.copy-button');
     const resultsCase = document.querySelector('.results-case');
     
-    // Очищаем только содержимое таблицы
+    // Reset state
     resultTable.innerHTML = '';
-    // Не скрываем блок результатов и кнопку копирования сразу
-    // copyButton.style.display = 'none';
-    // resultsContainer.classList.remove('visible');
-    // resultsCase.classList.remove('visible');
+    resultsContainer.classList.remove('visible');
+    resultsCase.classList.remove('visible');
+    copyButton.style.display = 'none';
     
     // Validate input
     if (!field.value.trim()) {
-        copyButton.style.display = 'none';
-        resultsContainer.classList.remove('visible');
-        resultsCase.classList.remove('visible');
         showError('Пожалуйста, введите данные');
         return;
     }
