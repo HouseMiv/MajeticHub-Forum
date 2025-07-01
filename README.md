@@ -1,4 +1,4 @@
-MajesticHUB Forum Stacker
+MajesticHUB Forum 
 ======================
 
 ## Описание
